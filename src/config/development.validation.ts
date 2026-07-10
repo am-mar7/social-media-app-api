@@ -1,0 +1,12 @@
+import Joi from 'joi';
+
+const validationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
+  DATABASE_URL: Joi.string().required(),
+  DATABASE_NAME: Joi.string().required(),
+  DATABASE_USER: Joi.string().required(),
+  DATABASE_PASSWORD: Joi.string().required(),
+  DATABASE_PORT: Joi.number().required().default(5432),
+});
+
+export default validationSchema;
