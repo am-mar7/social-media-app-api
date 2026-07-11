@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TagsModule } from './tags/tags.module';
 import { MetaOptionsModule } from './meta-options/meta-options.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PaginationModule } from './common/pagination/pagination.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import validationSchema from './config/development.validation';
@@ -22,11 +23,6 @@ import validationSchema from './config/development.validation';
       load: [appConfig, databaseConfig],
       validationSchema: validationSchema,
     }),
-    UsersModule,
-    PostsModule,
-    AuthModule,
-    TagsModule,
-    MetaOptionsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -41,6 +37,12 @@ import validationSchema from './config/development.validation';
         database: configService.get('database.name'),
       }),
     }),
+    UsersModule,
+    PostsModule,
+    AuthModule,
+    TagsModule,
+    MetaOptionsModule,
+    PaginationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

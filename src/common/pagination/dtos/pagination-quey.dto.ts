@@ -1,4 +1,3 @@
-import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class PaginationQueryDto {
@@ -14,9 +13,4 @@ export class PaginationQueryDto {
   //@Type(() => Number) no need for type conversion duo to enableImplicitConversion in main.ts
   limit?: number;
 
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  //@Type(() => Number) no need for type conversion duo to enableImplicitConversion in main.ts
-  pageSize?: number;
 }
