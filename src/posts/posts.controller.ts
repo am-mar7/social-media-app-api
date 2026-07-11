@@ -12,18 +12,24 @@ import {
 import { PostsService } from './providers/posts.service';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { PatchPostDto } from './dtos/patch-post.dto';
+import { GetPostsDto } from './dtos/get-posts.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  public getAllPosts() {
-    return this.postsService.getAllPosts();
+  public getAllPosts(@Query() getPostsDto: GetPostsDto) {
+    console.log(getPostsDto);
+    return this.postsService.getAllPosts(getPostsDto);
   }
 
   @Get(':id')
-  public getPostById(@Param('id', ParseIntPipe) id: number) {
+  public getPostById(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() getPostsDto: GetPostsDto,
+  ) {
+    console.log(getPostsDto);
     return this.postsService.getPostById(id);
   }
 
