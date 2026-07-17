@@ -11,6 +11,7 @@ import {
   DefaultValuePipe,
   Patch,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -20,6 +21,7 @@ import { UsersService } from './providers/users.service';
 import { User } from './user.entity';
 import { CreateManyUsers } from './providers/users-create-many-service';
 import { CreateManyUsersDto } from './dtos/create-many-users.dto';
+import { AccessTokenGuard } from 'src/auth/guards/access-token/access-token.guard';
 
 @Controller('users')
 export class UsersController {
@@ -49,6 +51,7 @@ export class UsersController {
     return null;
   }
 
+  @UseGuards(AccessTokenGuard)
   @Post('/create-many')
   public async createMany(
     @Body() createUsersDto: CreateManyUsersDto,

@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
+import { HashingProvider } from 'src/auth/providers/hashing.provider';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly hashingProvider: HashingProvider,
   ) {}
 
   public async getUsersFromDatabase() {
@@ -46,6 +48,17 @@ export class UsersService {
     }
 
     let user = this.userRepository.create(createUserDto);
+
+    try {
+      user.password = await this.hashingProvider.hash(createUserDto.password);
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(
+        error,
+        'Failed to hash the user password',
+      );
+    }
+
     try {
       user = await this.userRepository.save(user);
     } catch (error) {
@@ -60,6 +73,24 @@ export class UsersService {
 
     try {
       user = await this.userRepository.findOneBy({ id });
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(error);
+    }
+
+    if (!user) {
+      throw new BadRequestException('User not found', {
+        description: 'The user with this ID is not found',
+      });
+    }
+    return user;
+  }
+
+  public async findUserByEmail(email: string) {
+    let user: User | null = null;
+
+    try {
+      user = await this.userRepository.findOneBy({ email });
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException(error);
