@@ -5,9 +5,6 @@ import { AuthModule } from 'src/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { CreateManyUsers } from './providers/users-create-many-service';
-import { ConfigModule } from '@nestjs/config';
-import jwtConfig from 'src/auth/config/jwt.config';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   controllers: [UsersController],
@@ -16,8 +13,6 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([User]),
-    ConfigModule.forFeature(jwtConfig),
-    JwtModule.registerAsync(jwtConfig.asProvider()),
   ],
 })
 export class UsersModule {}

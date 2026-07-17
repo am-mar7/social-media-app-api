@@ -22,6 +22,8 @@ import { User } from './user.entity';
 import { CreateManyUsers } from './providers/users-create-many-service';
 import { CreateManyUsersDto } from './dtos/create-many-users.dto';
 import { AccessTokenGuard } from 'src/auth/guards/access-token/access-token.guard';
+import { Auth } from 'src/auth/decorator/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth.enum';
 
 @Controller('users')
 export class UsersController {
@@ -51,7 +53,8 @@ export class UsersController {
     return null;
   }
 
-  @UseGuards(AccessTokenGuard)
+  // @UseGuards(AccessTokenGuard)
+  @Auth(AuthType.Bearer)
   @Post('/create-many')
   public async createMany(
     @Body() createUsersDto: CreateManyUsersDto,
