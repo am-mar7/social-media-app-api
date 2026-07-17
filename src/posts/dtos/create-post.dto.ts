@@ -65,10 +65,6 @@ export class CreatePostDto {
   @Type(() => CreatePostMetaOptionsDto)
   metaOptions?: CreatePostMetaOptionsDto;
 
-  @IsInt()
-  @IsNotEmpty()
-  authorId: number;
-
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })

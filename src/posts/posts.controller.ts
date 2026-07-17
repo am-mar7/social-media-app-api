@@ -13,6 +13,8 @@ import { PostsService } from './providers/posts.service';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { PatchPostDto } from './dtos/patch-post.dto';
 import { GetPostsDto } from './dtos/get-posts.dto';
+import { ActiveUser } from 'src/auth/decorator/activeUser.decorator';
+import type { IActiveUser } from 'src/auth/interfaces/activeUser.interface';
 
 @Controller('posts')
 export class PostsController {
@@ -34,8 +36,14 @@ export class PostsController {
   }
 
   @Post()
-  public createPost(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.createPost(createPostDto);
+  public createPost(
+    @Body() createPostDto: CreatePostDto,
+    @ActiveUser() user: IActiveUser,
+  ) {
+    console.log('POST DTO', createPostDto);
+    console.log('ACTIVE USER', user);
+
+    return this.postsService.createPost(createPostDto, user);
   }
 
   @Delete(':id')

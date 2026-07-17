@@ -53,7 +53,6 @@ export class UsersController {
     return null;
   }
 
-  // @UseGuards(AccessTokenGuard)
   @Auth(AuthType.Bearer)
   @Post('/create-many')
   public async createMany(

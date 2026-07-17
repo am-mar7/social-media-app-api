@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Post } from '../post.entity';
@@ -15,6 +16,8 @@ import { TagsService } from 'src/tags/providers/tags.service';
 import { PatchPostDto } from '../dtos/patch-post.dto';
 import { GetPostsDto } from '../dtos/get-posts.dto';
 import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
+import { IActiveUser } from 'src/auth/interfaces/activeUser.interface';
+import { Tag } from 'src/tags/tag.entity';
 
 @Injectable()
 export class PostsService {
@@ -41,11 +44,17 @@ export class PostsService {
     }
   }
 
-  public async createPost(createPostDto: CreatePostDto) {
-    const user = await this.usersService.findUserById(createPostDto.authorId);
-    const tags = await this.tagsService.getTagsWithIds(
-      createPostDto.tags || [],
-    );
+  public async createPost(createPostDto: CreatePostDto, user: IActiveUser) {
+    let tags: Tag[] | undefined = undefined;
+    try {
+      tags = await this.tagsService.getTagsWithIds(createPostDto.tags || []);
+    } catch (error) {
+      this.logger.error(error);
+      throw new ConflictException('Some tags are not found', error);
+    }
+
+    if (createPostDto.tags?.length !== tags.length)
+      throw new BadRequestException('Some tags are not found');
 
     const post = this.postsRepository.create({
       ...createPostDto,

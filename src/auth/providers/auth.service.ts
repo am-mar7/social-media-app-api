@@ -12,6 +12,7 @@ import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import jwtConfig from '../config/jwt.config';
 import * as config from '@nestjs/config';
+import { IActiveUser } from '../interfaces/activeUser.interface';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +47,7 @@ export class AuthService {
       {
         email: user.email,
         id: user.id,
-      },
+      } as IActiveUser,
       {
         issuer: this.jwtConfiguration.issuer,
         audience: this.jwtConfiguration.audience,
