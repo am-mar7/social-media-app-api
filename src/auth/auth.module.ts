@@ -7,12 +7,14 @@ import { HashingProvider } from './providers/hashing.provider';
 import { ConfigModule } from '@nestjs/config';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
+import { TokensProvider } from './providers/tokens.provider';
 
 @Module({
   controllers: [AuthController],
   providers: [
     AuthService,
     { provide: HashingProvider, useClass: BcryptProvider },
+    TokensProvider,
   ],
   exports: [AuthService, HashingProvider],
   imports: [

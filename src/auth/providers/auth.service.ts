@@ -9,10 +9,8 @@ import { UsersService } from 'src/users/providers/users.service';
 import { SignInDto } from '../dtos/sign-in.dto';
 import { HashingProvider } from './hashing.provider';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
-import { JwtService } from '@nestjs/jwt';
 import jwtConfig from '../config/jwt.config';
-import * as config from '@nestjs/config';
-import { IActiveUser } from '../interfaces/activeUser.interface';
+import { TokensProvider } from './tokens.provider';
 
 @Injectable()
 export class AuthService {
@@ -20,9 +18,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly hashingProvider: HashingProvider,
-    private readonly jwtService: JwtService,
-    @Inject(jwtConfig.KEY)
-    private readonly jwtConfiguration: config.ConfigType<typeof jwtConfig>,
+    private readonly tokensProvider: TokensProvider,
   ) {}
 
   public async signIn(signInDto: SignInDto) {
@@ -43,20 +39,9 @@ export class AuthService {
       throw new BadRequestException('Invalid password');
     }
 
-    const accessToken = await this.jwtService.signAsync(
-      {
-        email: user.email,
-        id: user.id,
-      } as IActiveUser,
-      {
-        issuer: this.jwtConfiguration.issuer,
-        audience: this.jwtConfiguration.audience,
-        expiresIn: this.jwtConfiguration.accessTokenTtl,
-        secret: this.jwtConfiguration.secret,
-      },
-    );
+    const {accessToken, refreshToken} = await this.tokensProvider.generateTokens(user);
 
-    return { accessToken };
+    return { accessToken, refreshToken };
   }
 
   public async signUp(createUserDto: CreateUserDto) {
