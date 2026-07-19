@@ -8,13 +8,16 @@ import { ConfigModule } from '@nestjs/config';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { TokensProvider } from './providers/tokens.provider';
+import { GoogleAuthController } from './google-auth.controller';
+import { GoogleAuthService } from './providers/google-auth.service';
 
 @Module({
-  controllers: [AuthController],
+  controllers: [AuthController, GoogleAuthController],
   providers: [
     AuthService,
     { provide: HashingProvider, useClass: BcryptProvider },
     TokensProvider,
+    GoogleAuthService,
   ],
   exports: [AuthService, HashingProvider],
   imports: [

@@ -9,6 +9,8 @@ import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { HashingProvider } from 'src/auth/providers/hashing.provider';
+import { CreateManyUsers } from './users-create-many-service';
+import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +20,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly hashingProvider: HashingProvider,
+    private readonly createManyUsers: CreateManyUsers,
   ) {}
 
   public async getUsersFromDatabase() {
@@ -49,14 +52,16 @@ export class UsersService {
 
     let user = this.userRepository.create(createUserDto);
 
-    try {
-      user.password = await this.hashingProvider.hash(createUserDto.password);
-    } catch (error) {
-      this.logger.error(error);
-      throw new InternalServerErrorException(
-        error,
-        'Failed to hash the user password',
-      );
+    if (createUserDto.password) {
+      try {
+        user.password = await this.hashingProvider.hash(createUserDto.password);
+      } catch (error) {
+        this.logger.error(error);
+        throw new InternalServerErrorException(
+          error,
+          'Failed to hash the user password',
+        );
+      }
     }
 
     try {
@@ -118,5 +123,18 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  public async createMany(createManyUsersDto: CreateManyUsersDto) {
+    return await this.createManyUsers.createMany(createManyUsersDto);
+  }
+
+  public async findUserByGoogleId(googleId: string) {
+    try {
+      return await this.userRepository.findOneBy({ googleId });
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(error);
+    }
   }
 }

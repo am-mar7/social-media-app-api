@@ -28,7 +28,7 @@ export class AuthService {
     try {
       isCorrectPassword = await this.hashingProvider.compare(
         signInDto.password,
-        user.password,
+        user.password!,
       );
     } catch (error) {
       this.logger.error(error);
@@ -47,6 +47,6 @@ export class AuthService {
   public async signUp(createUserDto: CreateUserDto) {
     await this.usersService.createUser(createUserDto);
     const { email, password } = createUserDto;
-    return this.signIn({ email, password });
+    return this.signIn({ email: email!, password: password! });
   }
 }

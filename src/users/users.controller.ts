@@ -29,7 +29,6 @@ import { AuthType } from 'src/auth/enums/auth.enum';
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly createManyUsers: CreateManyUsers,
   ) {}
 
   @Get()
@@ -56,9 +55,9 @@ export class UsersController {
   @Auth(AuthType.Bearer)
   @Post('/create-many')
   public async createMany(
-    @Body() createUsersDto: CreateManyUsersDto,
+    @Body() createManyUsersDto: CreateManyUsersDto,
   ): Promise<User[]> {
-    return await this.createManyUsers.createMany(createUsersDto);
+    return await this.usersService.createMany(createManyUsersDto);
   }
 
   @Patch(':id')

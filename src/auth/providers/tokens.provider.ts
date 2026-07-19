@@ -24,18 +24,23 @@ export class TokensProvider {
   ) {}
 
   private async signToken<T>(userId: number, expiresIn: number, payload: T) {
-    return await this.jwtService.signAsync(
-      {
-        id: userId,
-        ...payload,
-      },
-      {
-        issuer: this.jwtConfiguration.issuer,
-        audience: this.jwtConfiguration.audience,
-        expiresIn: expiresIn,
-        secret: this.jwtConfiguration.secret,
-      },
-    );
+    try {
+      return await this.jwtService.signAsync(
+        {
+          id: userId,
+          ...payload,
+        },
+        {
+          issuer: this.jwtConfiguration.issuer,
+          audience: this.jwtConfiguration.audience,
+          expiresIn: expiresIn,
+          secret: this.jwtConfiguration.secret,
+        },
+      );
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(error, 'Failed to sign the token');
+    }
   }
 
   public async generateTokens(user: User) {
