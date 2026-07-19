@@ -3,17 +3,17 @@ import { Tag } from '../tag.entity';
 import { In, Repository } from 'typeorm';
 import { CreateTagDto } from '../dtos/create-tag.dto';
 import {
-  BadGatewayException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 
 @Injectable()
 export class TagsService {
-
   private readonly logger = new Logger(TagsService.name);
-  
+
   constructor(
     @InjectRepository(Tag)
     private readonly tagsRepository: Repository<Tag>,
@@ -24,7 +24,7 @@ export class TagsService {
       return await this.tagsRepository.find();
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
   }
 
@@ -35,11 +35,11 @@ export class TagsService {
       tag = await this.tagsRepository.findOne({ where: { id } });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
 
     if (!tag)
-      throw new BadGatewayException('Tag not found', {
+      throw new NotFoundException('Tag not found', {
         description: 'the tag is not found',
       });
 
@@ -55,11 +55,11 @@ export class TagsService {
       });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
 
     if (exsitingTag)
-      throw new BadGatewayException('Tag already exists', {
+      throw new ConflictException('Tag already exists', {
         description: 'the tag already exists',
       });
 
@@ -67,7 +67,7 @@ export class TagsService {
       return await this.tagsRepository.save(tag);
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
   }
 
@@ -78,46 +78,46 @@ export class TagsService {
       });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
   }
 
-  private async deleteTagPreCheck(tag: Tag | null, id: number) {
+  private async deleteTagPreCheck(id: number) {
+    let tag: Tag | null = null;
     try {
       tag = await this.tagsRepository.findOneBy({ id });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
 
     if (!tag)
-      throw new BadGatewayException('Tag not found', {
+      throw new NotFoundException('Tag not found', {
         description: 'the tag is not found',
       });
+
+    return tag;
   }
 
   public async deleteTag(id: number) {
-    let tag: Tag | null = null;
-
-    this.deleteTagPreCheck(tag, id);
+    const tag = await this.deleteTagPreCheck(id);
 
     try {
       await this.tagsRepository.delete({ id });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
     return { deleted: true, data: tag };
   }
 
   public async softDeleteTag(id: number) {
-    let tag: Tag | null = null;
-    this.deleteTagPreCheck(tag, id);
+    const tag = await this.deleteTagPreCheck(id);
     try {
       await this.tagsRepository.softDelete({ id });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('some thing went wrong');
     }
     return { deleted: true, data: tag };
   }
