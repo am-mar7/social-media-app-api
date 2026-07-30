@@ -15,27 +15,28 @@ import { PatchPostDto } from './dtos/patch-post.dto';
 import { GetPostsDto } from './dtos/get-posts.dto';
 import { ActiveUser } from 'src/auth/decorator/activeUser.decorator';
 import type { IActiveUser } from 'src/auth/interfaces/activeUser.interface';
+import { Auth } from 'src/auth/decorator/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth.enum';
 
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
+  @Auth(AuthType.None)
   public getAllPosts(@Query() getPostsDto: GetPostsDto) {
     console.log(getPostsDto);
     return this.postsService.getAllPosts(getPostsDto);
   }
 
   @Get(':id')
-  public getPostById(
-    @Param('id', ParseIntPipe) id: number,
-    @Query() getPostsDto: GetPostsDto,
-  ) {
-    console.log(getPostsDto);
+  @Auth(AuthType.None)
+  public getPostById(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.getPostById(id);
   }
 
   @Post()
+  @Auth(AuthType.Bearer)
   public createPost(
     @Body() createPostDto: CreatePostDto,
     @ActiveUser() user: IActiveUser,
@@ -47,15 +48,23 @@ export class PostsController {
   }
 
   @Delete(':id')
-  public deletePost(@Param('id', ParseIntPipe) id: number) {
-    return this.postsService.deletePost(id);
+  @Auth(AuthType.Bearer)
+  public deletePost(
+    @Param('id', ParseIntPipe) id: number,
+    @ActiveUser() user: IActiveUser,
+  ) {
+    return this.postsService.deletePost(id, user);
   }
 
   @Patch(':id')
+  @Auth(AuthType.Bearer)
   public updatePost(
     @Param('id', ParseIntPipe) id: number,
     @Body() patchPostDto: PatchPostDto,
+    @ActiveUser() user: IActiveUser,
   ) {
-    return this.postsService.updatePost(id, patchPostDto);
+    console.log(patchPostDto);
+
+    return this.postsService.updatePost(id, patchPostDto, user);
   }
 }

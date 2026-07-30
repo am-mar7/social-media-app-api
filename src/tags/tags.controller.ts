@@ -9,17 +9,21 @@ import {
 } from '@nestjs/common';
 import { TagsService } from './providers/tags.service';
 import { CreateTagDto } from './dtos/create-tag.dto';
+import { Auth } from 'src/auth/decorator/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth.enum';
 
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Get()
+  @Auth(AuthType.None )
   public getTags() {
     return this.tagsService.getAllTags();
   }
 
   @Get(':id')
+  @Auth(AuthType.None)
   public getTag(@Param('id', ParseIntPipe) id: number) {
     return this.tagsService.getTagById(id);
   }

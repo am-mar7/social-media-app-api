@@ -14,6 +14,7 @@ const validationSchema = Joi.object({
   JWT_TOKEN_AUDIENCE: Joi.string().required(),
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().required(),
+  API_VERSION: Joi.string().required(),
 });
 
 export default validationSchema;

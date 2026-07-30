@@ -12,7 +12,6 @@ import { PostStatus, PostType } from './enums';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { Tag } from 'src/tags/tag.entity';
 import { User } from 'src/users/user.entity';
-import { IsNotEmpty, IsOptional } from 'class-validator';
 
 @Entity()
 export class Post {
@@ -82,12 +81,10 @@ export class Post {
   metaOptions?: MetaOption;
 
   @ManyToOne(() => User , (user) => user.posts)
-  @IsNotEmpty()
   @JoinColumn()
   author: User;
 
   @ManyToMany(() => Tag , (tag) => tag.posts)
   @JoinTable()
-  @IsOptional()
   tags?: Tag[];
 }

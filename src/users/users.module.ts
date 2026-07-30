@@ -10,9 +10,6 @@ import { CreateManyUsers } from './providers/users-create-many-service';
   controllers: [UsersController],
   providers: [UsersService, CreateManyUsers],
   exports: [UsersService],
-  imports: [
-    forwardRef(() => AuthModule),
-    TypeOrmModule.forFeature([User]),
-  ],
+  imports: [forwardRef(() => AuthModule), TypeOrmModule.forFeature([User])],
 })
 export class UsersModule {}

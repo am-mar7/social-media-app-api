@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../dtos/pagination-quey.dto';
-import { ObjectLiteral, Repository } from 'typeorm';
+import { FindOptionsRelations, ObjectLiteral, Repository } from 'typeorm';
 import type { Request } from 'express';
 import { REQUEST } from '@nestjs/core';
 import { IPaginated } from '../interfaces/pagination.interface';
@@ -19,6 +19,7 @@ export class PaginationProvider {
   public async paginateQuery<T extends ObjectLiteral>(
     paginationQuery: PaginationQueryDto,
     repository: Repository<T>,
+    relations?: FindOptionsRelations<T>
   ) {
     const { page = 1, limit = 10 } = paginationQuery;
     const baseUrl = `${this.request.protocol}://${this.request.get('host')}`;
@@ -36,6 +37,7 @@ export class PaginationProvider {
       data = await repository.find({
         take: limit,
         skip: (page - 1) * limit,
+        relations:relations,
       });
     } catch (error) {
       throw new InternalServerErrorException();

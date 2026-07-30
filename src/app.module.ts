@@ -14,9 +14,10 @@ import databaseConfig from './config/database.config';
 import validationSchema from './config/development.validation';
 import jwtConfig from 'src/auth/config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
+import { DataResponseInterceptor } from './common/inceptors/data-response.interceptor';
 
 @Module({
   imports: [
@@ -57,6 +58,10 @@ import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard'
     {
       provide: APP_GUARD,
       useClass: AuthenticationGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DataResponseInterceptor,
     },
     AccessTokenGuard, 
   ],

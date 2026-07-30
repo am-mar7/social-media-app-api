@@ -6,32 +6,28 @@ import {
   Ip,
   Param,
   Post,
-  Query,
   ParseIntPipe,
-  DefaultValuePipe,
   Patch,
   Delete,
-  UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 
 import { CreateUserDto } from './dtos/create-user.dto';
-import { GetUserParamsDto } from './dtos/get-user-params.dto';
 import { PatchUserDto } from './dtos/patch-user.dto';
 import { UsersService } from './providers/users.service';
 import { User } from './user.entity';
-import { CreateManyUsers } from './providers/users-create-many-service';
 import { CreateManyUsersDto } from './dtos/create-many-users.dto';
-import { AccessTokenGuard } from 'src/auth/guards/access-token/access-token.guard';
 import { Auth } from 'src/auth/decorator/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth.enum';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @Auth(AuthType.None)
   public async getUsers() {
     return await this.usersService.getUsersFromDatabase();
   }
@@ -60,6 +56,7 @@ export class UsersController {
     return await this.usersService.createMany(createManyUsersDto);
   }
 
+  @Auth(AuthType.Bearer)
   @Patch(':id')
   public patchUser(@Body() patchUserDto?: PatchUserDto): string {
     console.log('bodyyyyyyyyyyyyyyyyyyyyy', patchUserDto);
@@ -67,6 +64,7 @@ export class UsersController {
     return 'user patched';
   }
 
+  @Auth(AuthType.Bearer)
   @Delete(':id')
   public async deleteUser(@Param('id', ParseIntPipe) id: number) {
     return await this.usersService.deleteUser(id);

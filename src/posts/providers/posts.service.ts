@@ -4,7 +4,8 @@ import {
   Injectable,
   Logger,
   InternalServerErrorException,
-  ConflictException,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Post } from '../post.entity';
@@ -32,32 +33,51 @@ export class PostsService {
     private readonly paginationProvider: PaginationProvider,
   ) {}
 
+  private sanitizeAuthor(post: Post) {
+    if (!post.author) return { ...post, author: null };
+    const { id, email, firstName, lastName } = post.author;
+    return { ...post, author: { id, email, firstName, lastName } };
+  }
+
   public async getAllPosts(getPostsDto: GetPostsDto) {
     try {
-      return await this.paginationProvider.paginateQuery(
+      const { data, ...rest } = await this.paginationProvider.paginateQuery(
         getPostsDto,
         this.postsRepository,
+        {
+          author: true,
+          tags: true,
+          metaOptions: true,
+        },
       );
+
+      const posts = data.map((d) => this.sanitizeAuthor(d));
+
+      return { data: posts, ...rest };
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('something went wrong');
     }
   }
 
   public async createPost(createPostDto: CreatePostDto, user: IActiveUser) {
-    let tags: Tag[] | undefined = undefined;
-    try {
-      tags = await this.tagsService.getTagsWithIds(createPostDto.tags || []);
-    } catch (error) {
-      this.logger.error(error);
-      throw new ConflictException('Some tags are not found', error);
-    }
+    const [tags, metaOptions] = await Promise.all([
+      createPostDto.tags
+        ? this.tagsService.getTagsWithIds(createPostDto.tags)
+        : Promise.resolve([]),
 
-    if (createPostDto.tags?.length !== tags.length)
-      throw new BadRequestException('Some tags are not found');
+      createPostDto.metaOptions
+        ? this.metaOptionsService.createMetaOption(createPostDto.metaOptions)
+        : Promise.resolve(undefined),
+    ]);
+
+    if (createPostDto.tags && createPostDto.tags.length !== tags.length) {
+      throw new BadRequestException('Some tags could not be found');
+    }
 
     const post = this.postsRepository.create({
       ...createPostDto,
+      metaOptions,
       author: user,
       tags,
     });
@@ -65,69 +85,106 @@ export class PostsService {
       return await this.postsRepository.save(post);
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('something went wrong');
     }
   }
 
-  public async updatePost(id: number, patchPostDto: PatchPostDto) {
+  public async updatePost(
+    id: number,
+    patchPostDto: PatchPostDto,
+    user: IActiveUser,
+  ) {
     let post: Post | null = null;
 
     try {
-      post = await this.postsRepository.findOneBy({ id });
+      post = await this.postsRepository.findOne({
+        where: { id },
+        relations: {
+          author: true,
+          tags: true,
+          metaOptions: true,
+        },
+      });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('something went wrong');
     }
 
     if (!post) {
-      throw new BadRequestException('Post not found');
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.author.id !== user.id) {
+      throw new ForbiddenException(
+        'You are not authorized to update this post',
+      );
     }
 
     const [tags, metaOptions] = await Promise.all([
       patchPostDto.tags
         ? this.tagsService.getTagsWithIds(patchPostDto.tags)
-        : Promise.resolve([]),
+        : Promise.resolve(post.tags),
 
       patchPostDto.metaOptions
         ? this.metaOptionsService.createMetaOption(patchPostDto.metaOptions)
-        : Promise.resolve(undefined),
+        : Promise.resolve(post.metaOptions),
     ]);
+
+    if (patchPostDto.tags && tags && patchPostDto.tags.length !== tags.length) {
+      throw new BadRequestException('Some tags could not be found');
+    }
 
     post.title = patchPostDto.title ?? post.title;
     post.content = patchPostDto.content ?? post.content;
     post.slug = patchPostDto.slug ?? post.slug;
     post.status = patchPostDto.status ?? post.status;
     post.postType = patchPostDto.postType ?? post.postType;
-    post.metaOptions = metaOptions ?? post.metaOptions;
-    post.tags = tags ?? post.tags;
-
+    post.metaOptions = metaOptions;
+    post.tags = tags;
     try {
-      return await this.postsRepository.save(post);
+      const updatedPost = await this.postsRepository.save(post);
+
+      return this.sanitizeAuthor(updatedPost);
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('something went wrong');
     }
   }
 
-  public async deletePost(id: number) {
+  public async deletePost(id: number, user: IActiveUser) {
     let post: Post | null = null;
 
     try {
-      post = await this.postsRepository.findOneBy({ id });
+      post = await this.postsRepository.findOne({
+        where: { id },
+        relations: {
+          author: true,
+          metaOptions: true,
+          tags: true,
+        },
+      });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('something went wrong');
     }
 
     if (!post) {
-      throw new BadRequestException('Post not found');
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.author.id !== user.id) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this post',
+      );
     }
 
     try {
-      return await this.postsRepository.delete(id);
+      await this.postsRepository.delete(id);
+
+      return this.sanitizeAuthor(post);
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('something went wrong');
     }
   }
 
@@ -145,13 +202,13 @@ export class PostsService {
       });
     } catch (error) {
       this.logger.error(error);
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('something went wrong');
     }
 
     if (!post) {
-      throw new BadRequestException('Post not found');
+      throw new NotFoundException('Post not found');
     }
 
-    return post;
+    return this.sanitizeAuthor(post);
   }
 }
