@@ -18,6 +18,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
 import { DataResponseInterceptor } from './common/inceptors/data-response.interceptor';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { DataResponseInterceptor } from './common/inceptors/data-response.interc
     PaginationModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -63,7 +65,7 @@ import { DataResponseInterceptor } from './common/inceptors/data-response.interc
       provide: APP_INTERCEPTOR,
       useClass: DataResponseInterceptor,
     },
-    AccessTokenGuard, 
+    AccessTokenGuard,
   ],
 })
 export class AppModule {}
