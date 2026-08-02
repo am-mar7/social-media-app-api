@@ -15,9 +15,9 @@ const validationSchema = Joi.object({
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().required(),
   API_VERSION: Joi.string().required(),
-  imageKitUrlEndpoint: Joi.string().required(),
-  imageKitPublicKey: Joi.string().required(),
-  imageKitPrivateKey: Joi.string().required(),
+  IMAGEKIT_URL_ENDPOINT: Joi.string().required(),
+  IMAGEKIT_PUBLIC_KEY: Joi.string().required(),
+  IMAGEKIT_PRIVATE_KEY: Joi.string().required(),
 });
 
 export default validationSchema;
