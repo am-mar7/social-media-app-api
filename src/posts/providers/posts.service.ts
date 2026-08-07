@@ -34,7 +34,6 @@ export class PostsService {
   ) {}
 
   private sanitizeAuthor(post: Post) {
-    if (!post.author) return { ...post, author: null };
     const { id, email, firstName, lastName } = post.author;
     return { ...post, author: { id, email, firstName, lastName } };
   }
