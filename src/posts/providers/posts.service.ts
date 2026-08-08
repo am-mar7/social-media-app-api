@@ -18,7 +18,6 @@ import { PatchPostDto } from '../dtos/patch-post.dto';
 import { GetPostsDto } from '../dtos/get-posts.dto';
 import { PaginationProvider } from 'src/common/pagination/providers/pagination.provider';
 import { IActiveUser } from 'src/auth/interfaces/activeUser.interface';
-import { Tag } from 'src/tags/tag.entity';
 
 @Injectable()
 export class PostsService {
@@ -60,15 +59,13 @@ export class PostsService {
   }
 
   public async createPost(createPostDto: CreatePostDto, user: IActiveUser) {
-    const [tags, metaOptions] = await Promise.all([
-      createPostDto.tags
-        ? this.tagsService.getTagsWithIds(createPostDto.tags)
-        : Promise.resolve([]),
+    const tags = createPostDto.tags
+      ? await this.tagsService.getTagsWithIds(createPostDto.tags)
+      : [];
 
-      createPostDto.metaOptions
-        ? this.metaOptionsService.createMetaOption(createPostDto.metaOptions)
-        : Promise.resolve(undefined),
-    ]);
+    const metaOptions = createPostDto.metaOptions
+      ? createPostDto.metaOptions.map((m) => ({ metaValue: m.metaValue }))
+      : undefined;
 
     if (createPostDto.tags && createPostDto.tags.length !== tags.length) {
       throw new BadRequestException('Some tags could not be found');
@@ -125,7 +122,12 @@ export class PostsService {
         : Promise.resolve(post.tags),
 
       patchPostDto.metaOptions
-        ? this.metaOptionsService.createMetaOption(patchPostDto.metaOptions)
+        ? this.metaOptionsService.replaceMetaOptionsForPost(
+            post.id,
+            Array.isArray(patchPostDto.metaOptions)
+              ? patchPostDto.metaOptions
+              : [patchPostDto.metaOptions],
+          )
         : Promise.resolve(post.metaOptions),
     ]);
 

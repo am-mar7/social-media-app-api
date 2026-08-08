@@ -64,7 +64,6 @@ export class PostsController {
     @ActiveUser() user: IActiveUser,
   ) {
     console.log(patchPostDto);
-
     return this.postsService.updatePost(id, patchPostDto, user);
   }
 }

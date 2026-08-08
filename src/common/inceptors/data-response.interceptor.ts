@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   CallHandler,
   ExecutionContext,
@@ -14,7 +15,9 @@ export class DataResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     console.log('BEFORE...');
 
-    const apiVersion = this.configService.get('app.apiVersion');
+    const apiVersion: string =
+      this.configService.get('app.apiVersion') ?? '1.0.0';
+
     return next.handle().pipe(
       map((data) => {
         return { 'api version': apiVersion, data };

@@ -3,6 +3,8 @@ import {
   Injectable,
   Logger,
   InternalServerErrorException,
+  NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Comment } from '../comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,9 +24,14 @@ export class CommentsService {
     private readonly usersService: UsersService,
   ) {}
 
-  public async createComment(createCommentDto: CreateCommentDto) {
-    const { content, parentCommentId, postId, commenterId, repliedToId } =
-      createCommentDto;
+  public async createComment(
+    createCommentDto: CreateCommentDto,
+    commenterId: number,
+  ) {
+    const { content, parentCommentId, postId, repliedToId } = createCommentDto;
+
+    if (repliedToId && !parentCommentId)
+      throw new BadRequestException('repliedToId requires a parentCommentId');
 
     const [post, commenter, parentComment, repliedTo] = await Promise.all([
       this.postsService.getPostById(postId),
@@ -37,18 +44,10 @@ export class CommentsService {
         : Promise.resolve(null),
     ]);
 
-    if (!post)
-      throw new BadRequestException(`Post with ID ${postId} not found`);
-    if (!commenter)
-      throw new BadRequestException(`User with ID ${commenterId} not found`);
     if (parentCommentId && !parentComment)
-      throw new BadRequestException(
+      throw new NotFoundException(
         `Comment with ID ${parentCommentId} not found`,
       );
-    if (repliedToId && !repliedTo)
-      throw new BadRequestException(`User with ID ${repliedToId} not found`);
-    if (repliedToId && !parentCommentId)
-      throw new BadRequestException('repliedToId requires a parentCommentId');
 
     try {
       const comment = this.commentsRepository.create({
@@ -65,14 +64,31 @@ export class CommentsService {
     }
   }
 
-  public async updateComment(id: number, updateCommentDto: UpdateCommentDto) {
-    const comment = await this.commentsRepository.findOne({ where: { id } });
+  public async updateComment(
+    id: number,
+    updateCommentDto: UpdateCommentDto,
+    userId: number,
+  ) {
+    console.log('Start of the service');
+
+    const comment = await this.commentsRepository.findOne({
+      where: { id },
+      relations: { commenter: true },
+    });
+    console.log('Fetched comment:', comment); // Debugging line
     if (!comment) {
-      throw new BadRequestException(`Comment with ID ${id} not found`);
+      throw new NotFoundException(`Comment with ID ${id} not found`);
+    }
+    console.log('Commenter ID:', comment.commenter.id); // Debugging line
+    console.log('User ID:', userId); // Debugging line
+    if (comment.commenter.id !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to update this comment',
+      );
     }
 
     comment.content = updateCommentDto.content;
-
+    console.log('Updated comment content:', comment.content); // Debugging line
     try {
       return await this.commentsRepository.save(comment);
     } catch (error) {
@@ -81,10 +97,16 @@ export class CommentsService {
     }
   }
 
-  public async deleteComment(id: number) {
+  public async deleteComment(id: number, userId: number) {
     const comment = await this.commentsRepository.findOne({ where: { id } });
     if (!comment) {
-      throw new BadRequestException(`Comment with ID ${id} not found`);
+      throw new NotFoundException(`Comment with ID ${id} not found`);
+    }
+
+    if (comment.commenter.id !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to update this comment',
+      );
     }
 
     try {
@@ -99,7 +121,7 @@ export class CommentsService {
   public async getPostComments(postId: number) {
     const post = await this.postsService.getPostById(postId);
     if (!post) {
-      throw new BadRequestException(`Post with ID ${postId} not found`);
+      throw new NotFoundException(`Post with ID ${postId} not found`);
     }
 
     try {

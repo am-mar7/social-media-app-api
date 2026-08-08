@@ -6,7 +6,6 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Comment } from 'src/comments/comment.entity';
@@ -76,10 +75,10 @@ export class Post {
   })
   publishedAt?: Date;
 
-  @OneToOne(() => MetaOption, (metaOptions) => metaOptions.post, {
+  @OneToMany(() => MetaOption, (metaOption) => metaOption.post, {
     cascade: true,
   })
-  metaOptions?: MetaOption;
+  metaOptions?: MetaOption[];
 
   @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn()

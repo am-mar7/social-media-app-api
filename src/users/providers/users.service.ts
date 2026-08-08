@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from '../user.entity';
@@ -35,6 +36,7 @@ export class UsersService {
 
   public async createUser(createUserDto: CreateUserDto) {
     let existingUser: User | null = null;
+    console.log(createUserDto);
 
     try {
       existingUser = await this.userRepository.findOne({
@@ -85,7 +87,7 @@ export class UsersService {
     }
 
     if (!user) {
-      throw new BadRequestException('User not found', {
+      throw new NotFoundException('User not found', {
         description: 'The user with this ID is not found',
       });
     }
@@ -103,8 +105,8 @@ export class UsersService {
     }
 
     if (!user) {
-      throw new BadRequestException('User not found', {
-        description: 'The user with this ID is not found',
+      throw new NotFoundException('User not found', {
+        description: 'The user with this email is not found',
       });
     }
     return user;

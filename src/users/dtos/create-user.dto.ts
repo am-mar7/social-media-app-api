@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   IsEmail,
   IsNotEmpty,
@@ -7,6 +6,7 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -32,6 +32,7 @@ export class CreateUserDto {
   @IsOptional()
   @MinLength(8)
   @MaxLength(96)
+  @ValidateIf((o: CreateUserDto) => !o.googleId)
   @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
     message: 'Password must contain at least one letter and one number',
   })

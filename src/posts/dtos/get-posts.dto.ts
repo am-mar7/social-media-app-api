@@ -1,14 +1,14 @@
 import { IntersectionType } from '@nestjs/mapped-types';
-import { IsDate, IsOptional } from 'class-validator';
+import { IsISO8601, IsOptional } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-quey.dto';
 
 class GetPostsBaseDto {
   @IsOptional()
-  @IsDate()
+  @IsISO8601()
   startDate?: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsISO8601()
   endDate?: Date;
 }
 

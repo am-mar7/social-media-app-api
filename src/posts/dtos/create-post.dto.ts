@@ -61,9 +61,10 @@ export class CreatePostDto {
   publishedAt?: Date;
 
   @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreatePostMetaOptionsDto)
-  metaOptions?: CreatePostMetaOptionsDto;
+  metaOptions?: CreatePostMetaOptionsDto[];
 
   @IsOptional()
   @IsArray()

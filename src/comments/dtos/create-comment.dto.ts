@@ -15,9 +15,10 @@ export class CreateCommentDto {
   @Type(() => Number)
   postId: number;
 
-  @IsInt()
-  @Type(() => Number)
-  commenterId: number;
+  // should be provided by the jwt token, not the client
+  // @IsInt()
+  // @Type(() => Number)
+  // commenterId: number;
 
   @IsOptional()
   @IsInt()
