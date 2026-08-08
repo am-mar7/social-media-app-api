@@ -11,6 +11,7 @@ import { CreateUserDto } from '../dtos/create-user.dto';
 import { HashingProvider } from 'src/auth/providers/hashing.provider';
 import { CreateManyUsers } from './users-create-many-service';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
+import { PatchUserDto } from '../dtos/patch-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -135,6 +136,26 @@ export class UsersService {
     } catch (error) {
       this.logger.error(error);
       throw new InternalServerErrorException(error);
+    }
+  }
+
+  public async updateUserData(patchUserDto: PatchUserDto, userId: number) {
+    let user = await this.findUserById(userId);
+    try {
+      if (patchUserDto.password)
+        patchUserDto.password = await this.hashingProvider.hash(
+          patchUserDto.password,
+        );
+
+      user = { ...user, ...patchUserDto };
+      user = await this.userRepository.save(user);
+      return user;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(
+        error,
+        'Failed to update the user data',
+      );
     }
   }
 }

@@ -5,9 +5,11 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Comment } from 'src/comments/comment.entity';
 import { PostStatus, PostType } from './enums';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { Tag } from 'src/tags/tag.entity';
@@ -74,17 +76,19 @@ export class Post {
   })
   publishedAt?: Date;
 
-
   @OneToOne(() => MetaOption, (metaOptions) => metaOptions.post, {
     cascade: true,
   })
   metaOptions?: MetaOption;
 
-  @ManyToOne(() => User , (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn()
   author: User;
 
-  @ManyToMany(() => Tag , (tag) => tag.posts)
+  @ManyToMany(() => Tag, (tag) => tag.posts)
   @JoinTable()
   tags?: Tag[];
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments?: Comment[];
 }

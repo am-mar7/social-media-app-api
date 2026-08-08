@@ -1,5 +1,5 @@
 import { IntersectionType } from '@nestjs/mapped-types';
-import { IsDate, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsOptional } from 'class-validator';
 import { PaginationQueryDto } from 'src/common/pagination/dtos/pagination-quey.dto';
 
 class GetPostsBaseDto {

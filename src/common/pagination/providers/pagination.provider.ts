@@ -2,6 +2,8 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
+  Scope,
 } from '@nestjs/common';
 import { PaginationQueryDto } from '../dtos/pagination-quey.dto';
 import { FindOptionsRelations, ObjectLiteral, Repository } from 'typeorm';
@@ -9,8 +11,9 @@ import type { Request } from 'express';
 import { REQUEST } from '@nestjs/core';
 import { IPaginated } from '../interfaces/pagination.interface';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class PaginationProvider {
+  private readonly logger = new Logger(PaginationProvider.name);
   constructor(
     @Inject(REQUEST)
     private readonly request: Request,
@@ -19,7 +22,7 @@ export class PaginationProvider {
   public async paginateQuery<T extends ObjectLiteral>(
     paginationQuery: PaginationQueryDto,
     repository: Repository<T>,
-    relations?: FindOptionsRelations<T>
+    relations?: FindOptionsRelations<T>,
   ) {
     const { page = 1, limit = 10 } = paginationQuery;
     const baseUrl = `${this.request.protocol}://${this.request.get('host')}`;
@@ -37,9 +40,10 @@ export class PaginationProvider {
       data = await repository.find({
         take: limit,
         skip: (page - 1) * limit,
-        relations:relations,
+        relations: relations,
       });
     } catch (error) {
+      this.logger.error(error);
       throw new InternalServerErrorException();
     }
 

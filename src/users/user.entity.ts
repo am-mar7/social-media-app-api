@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { IsOptional } from 'class-validator';
 import { Post } from 'src/posts/post.entity';
+import { Comment } from 'src/comments/comment.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -48,4 +49,8 @@ export class User {
   @OneToMany(() => Post, (post) => post.author)
   @IsOptional()
   posts?: Post[];
+
+  @OneToMany(() => Comment, (comment) => comment.commenter)
+  @IsOptional()
+  comments?: Comment[];
 }

@@ -25,10 +25,10 @@ export class Comment {
   @OneToMany(() => Comment, (comment) => comment.parentComment, {})
   replies?: Comment[];
 
-  @ManyToOne(() => User, (user) => user.id, { nullable: false })
+  @ManyToOne(() => User, (user) => user.comments, { nullable: false })
   commenter: User;
 
-  @ManyToOne(() => Post, (post) => post.id, { nullable: false })
+  @ManyToOne(() => Post, (post) => post.comments, { nullable: false })
   post: Post;
 
   @ManyToOne(() => User, (user) => user.id, { nullable: true })

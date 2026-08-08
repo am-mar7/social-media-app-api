@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -9,7 +8,6 @@ import { UsersService } from 'src/users/providers/users.service';
 import { SignInDto } from '../dtos/sign-in.dto';
 import { HashingProvider } from './hashing.provider';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
-import jwtConfig from '../config/jwt.config';
 import { TokensProvider } from './tokens.provider';
 
 @Injectable()
@@ -39,7 +37,8 @@ export class AuthService {
       throw new BadRequestException('Invalid password');
     }
 
-    const {accessToken, refreshToken} = await this.tokensProvider.generateTokens(user);
+    const { accessToken, refreshToken } =
+      await this.tokensProvider.generateTokens(user);
 
     return { accessToken, refreshToken };
   }
@@ -47,6 +46,6 @@ export class AuthService {
   public async signUp(createUserDto: CreateUserDto) {
     await this.usersService.createUser(createUserDto);
     const { email, password } = createUserDto;
-    return this.signIn({ email: email!, password: password! });
+    return this.signIn({ email: email, password: password! });
   }
 }

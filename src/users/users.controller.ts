@@ -58,15 +58,16 @@ export class UsersController {
 
   @Auth(AuthType.Bearer)
   @Patch(':id')
-  public patchUser(@Body() patchUserDto?: PatchUserDto): string {
-    console.log('bodyyyyyyyyyyyyyyyyyyyyy', patchUserDto);
-    console.log(patchUserDto, patchUserDto instanceof PatchUserDto);
-    return 'user patched';
+  public patchUser(
+    @Body() patchUserDto: PatchUserDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.usersService.updateUserData(patchUserDto, id);
   }
 
   @Auth(AuthType.Bearer)
   @Delete(':id')
-  public async deleteUser(@Param('id', ParseIntPipe) id: number) {
-    return await this.usersService.deleteUser(id);
+  public deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.deleteUser(id);
   }
 }
