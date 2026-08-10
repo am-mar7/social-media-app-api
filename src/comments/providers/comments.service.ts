@@ -85,7 +85,7 @@ export class CommentsService {
       );
     }
 
-    comment.content = updateCommentDto.content;
+    comment.content = updateCommentDto.content ?? comment.content;
     this.logger.debug(`comment ${id} content updated`);
     try {
       return await this.commentsRepository.save(comment);

@@ -32,7 +32,9 @@ export class UploadsToImageKitProvider {
         fileName: file.originalname,
         folder: '/uploads',
       });
-      return result.filePath;
+      // ImageKit returns both `filePath` (storage path) and `url` (public URL).
+      // Return the full public URL so callers can use it directly as an image URL.
+      return result.url ?? result.filePath;
     } catch (error) {
       this.logger.error('Upload error:', error);
       throw new InternalServerErrorException(

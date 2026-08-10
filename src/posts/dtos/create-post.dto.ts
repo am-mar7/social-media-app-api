@@ -1,6 +1,5 @@
 import {
   IsArray,
-  IsDate,
   IsEnum,
   IsInt,
   IsISO8601,
@@ -17,7 +16,6 @@ import {
 import { PostStatus, PostType } from '../enums';
 import { Type } from 'class-transformer';
 import { CreatePostMetaOptionsDto } from '../../meta-options/dtos/create-post-meta-options.dto';
-import { Tag } from 'src/tags/tag.entity';
 
 export class CreatePostDto {
   @IsString()
