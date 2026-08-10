@@ -64,4 +64,13 @@ export class UploadsService {
       );
     }
   }
+
+  public async findUploadByUrl(url: string): Promise<Uploads | null> {
+    try {
+      return await this.uploadsRepository.findOne({ where: { url } });
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
 }

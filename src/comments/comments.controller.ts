@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { CommentsService } from './providers/comments.service';
 import { CreateCommentDto } from './dtos/create-comment.dto';
-import { UpdateCommentDto } from './dtos/update-comment.dto';
+import { PatchCommentDto } from './dtos/update-comment.dto';
 import { ActiveUser } from 'src/auth/decorator/activeUser.decorator';
 import type { IActiveUser } from 'src/auth/interfaces/activeUser.interface';
 
@@ -38,10 +38,10 @@ export class CommentsController {
   @Patch(':id')
   public updateComment(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateCommentDto: UpdateCommentDto,
+    @Body() PatchCommentDto: PatchCommentDto,
     @ActiveUser() user: IActiveUser,
   ) {
-    return this.commentsService.updateComment(id, updateCommentDto, user.id);
+    return this.commentsService.updateComment(id, PatchCommentDto, user.id);
   }
 
   @Delete(':id')

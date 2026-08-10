@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 
 export class CreateCommentDto {
   @IsString()
@@ -24,4 +30,8 @@ export class CreateCommentDto {
   @IsInt()
   @Type(() => Number)
   repliedToId?: number;
+
+  @IsOptional()
+  @IsUrl()
+  uploadedFileUrl?: string;
 }

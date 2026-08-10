@@ -9,5 +9,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   controllers: [UploadsController],
   providers: [UploadsService, UploadsToImageKitProvider],
   imports: [TypeOrmModule.forFeature([Uploads])],
+  exports: [UploadsService, TypeOrmModule.forFeature([Uploads])],
 })
 export class UploadsModule {}

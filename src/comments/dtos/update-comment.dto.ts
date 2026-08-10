@@ -1,7 +1,12 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsUrl, IsOptional } from 'class-validator';
 
-export class UpdateCommentDto {
+export class PatchCommentDto {
   @IsString()
+  @IsOptional()
   @IsNotEmpty()
   content: string;
+
+  @IsOptional()
+  @IsUrl()
+  uploadedFileUrl?: string;
 }
