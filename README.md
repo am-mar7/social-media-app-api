@@ -1,98 +1,183 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Social Media API 
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This repository implements a backend API for a social-media style application built with NestJS and TypeORM. It provides user accounts, posts, comments, tags, uploads, and per-post metadata. The API is production-minded (authentication, token refresh, transactional updates, and DTO validation) while remaining easy to extend.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Quick Links
 
-## Description
+- Source: src/ (controllers, modules, providers)
+- Main entry: src/main.ts
+- App module: src/app.module.ts
+- Posts: src/posts
+- Meta options: src/meta-options
+- Auth: src/auth
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech stack
 
-## Project setup
+- Node.js + TypeScript
+- NestJS framework
+- TypeORM (Postgres-friendly) for ORM
+- class-validator / class-transformer for DTO validation and serialization
 
-```bash
-$ npm install
-```
 
-## Compile and run the project
+## Project overview
 
-```bash
-# development
-$ npm run start
+This project implements a social media API that supports:
 
-# watch mode
-$ npm run start:dev
+- Authentication: local email/password and Google OAuth, access + refresh JWT flows, refresh token rotation.
+- Users & Profiles: user registration, profile serialization (passwords excluded from responses), and account-related endpoints.
+- Posts: create, read, update, delete posts with pagination, tags, and per-post metadata.
+- MetaOptions: per-post metadata modeled as multiple `MetaOption` rows so entries can be updated/created/deleted atomically.
+- Comments: authenticated users can add comments to posts.
+- Tags: lightweight tagging CRUD and assignment to posts.
+- Uploads: file upload endpoints with an upload provider abstraction (e.g. ImageKit integration).
 
-# production mode
-$ npm run start:prod
-```
+The codebase is organized into feature modules (auth, users, posts, comments, tags, uploads, meta-options) and uses DTOs + validation for request shapes.
 
-## Run tests
 
-```bash
-# unit tests
-$ npm run test
+## Important design decisions (current)
 
-# e2e tests
-$ npm run test:e2e
+- `MetaOption` is modeled as `@ManyToOne` → `Post` and `Post.metaOptions` is `@OneToMany` to allow multiple metadata rows per post and transactional replace.
+- Use transactional DB operations for replace/update of meta rows (`MetaOptionsService.replaceMetaOptionsForPost(post, incoming[])`).
+- Sensitive logging removed: avoid `console.log` of tokens, requests, or uploaded file buffers; use `Logger.debug()` with non-sensitive context.
+- Global `ClassSerializerInterceptor` is enabled so entities annotated with `@Exclude()` (e.g., `User.password`) are not sent in responses.
 
-# test coverage
-$ npm run test:cov
-```
+## Repository structure (high-level)
 
-## Deployment
+- src/
+	- app.module.ts — application root module
+	- main.ts — application bootstrap
+	- auth/ — authentication controllers, providers, guards
+	- posts/ — post entity, controller, DTOs, service
+	- meta-options/ — meta-option entity and service (replace logic)
+	- users/, comments/, tags/, uploads/ — related modules and providers
+	- common/ — interceptors, pagination helpers
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## Running the project (development)
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. Install dependencies
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+2. Environment variables
 
-## Resources
+Create a `.env` (or provide env vars) with at least the DB and JWT config. Example keys expected:
 
-Check out a few resources that may come in handy when working with NestJS:
+- `DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USER`, `DATABASE_PASSWORD`, `DATABASE_NAME`
+- `JWT_SECRET`, `JWT_EXPIRES_IN`, `JWT_REFRESH_TOKEN_SECRET`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+3. Start the app
 
-## Support
+```bash
+npm run start:dev
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+4. Open API (default) at `http://localhost:3000` (or configured port)
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Database and migrations
 
-## License
+- The project uses TypeORM. In development `synchronize: true` may be convenient; for production generate controlled migrations and apply them via TypeORM CLI.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Migration guidance for `MetaOption` model change:
+
+1. Create the `meta_option` table with a `postId` FK and a JSON column `metaValue` if it doesn't exist.
+2. If you previously stored metadata as a single JSON blob per post, write a controlled migration script (Node/TypeORM script) to read the old JSON and insert one or more `meta_option` rows per post.
+3. Validate migrated rows and add indexes if required.
+
+Example outline (SQL):
+
+```sql
+ALTER TABLE meta_option ADD COLUMN postId integer;
+ALTER TABLE meta_option ADD CONSTRAINT fk_meta_post FOREIGN KEY (postId) REFERENCES post(id) ON DELETE CASCADE;
+```
+
+Prefer to run migration scripts in a staging environment before production.
+
+
+## Key endpoints (examples)
+
+- `POST /auth/signin` — sign in with email/password
+- `POST /auth/signup` — register a new user (passwords validated and hashed)
+- `POST /auth/google` — Google OAuth endpoints
+- `POST /auth/refresh` — exchange refresh token for an access token
+- `POST /posts` — create post with optional `metaOptions` (auth required)
+- `GET /posts` — list posts with pagination and filters
+- `GET /posts/:id` — retrieve a single post (includes metaOptions and tags)
+- `PATCH /posts/:id` — update post and perform transactional replace of `metaOptions`
+- `POST /comments` — create comment (auth required)
+- `POST /uploads` — upload file via configured provider
+
+Create post example (JSON body):
+
+```http
+POST /posts
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+	"title": "A post",
+	"slug": "a-post",
+	"postType": "other",
+	"status": "published",
+	"metaOptions": [
+		{ "metaValue": { "key": "value1" } },
+		{ "metaValue": { "key": "value2" } }
+	]
+}
+```
+
+Patch `metaOptions` example (transactional replace): provide `id` to update existing entries, omit to create new ones; rows missing from the incoming array will be deleted.
+
+## DTOs and validation
+
+- DTOs use `class-validator` and nested DTOs for arrays.
+- `CreatePostDto` and `PatchPostDto` accept `metaOptions` as an array of `CreatePostMetaOptionsDto` (nested validation enabled).
+
+
+## Security notes
+
+- `User.password` is excluded from responses via `@Exclude()` and global `ClassSerializerInterceptor`.
+- Refresh token handling should return `401 Unauthorized` for invalid/expired tokens; avoid `500` responses for auth errors.
+- Avoid logging secrets or full request payloads. Use `Logger.debug()` with caution and redact sensitive fields.
+
+## Tests
+
+- E2E tests live in `test/` using Jest. Run them with:
+
+```bash
+npm run test:e2e
+```
+
+
+## Development tips and next tasks
+
+- Add integration tests for `MetaOptionsService.replaceMetaOptionsForPost` to assert update/create/delete semantics within a transaction.
+- Generate a TypeORM migration to implement the relation/schema change for `MetaOption` prior to production deployment.
+- Add endpoint tests covering auth, token refresh, and role/permission boundaries if extended.
+
+---
+
+If you'd like, I can now:
+
+- Generate a TypeORM migration script to convert existing meta JSON into `MetaOption` rows.
+- Add automated integration tests for transactional meta replacement.
+- Produce a compact API reference markdown for documentation or Postman collection.
+
+Tell me which of these you'd like next.
+
+## Contributing
+
+Fork and send PRs; run linters and tests before submitting.
+
+---
+
+If you'd like, I can now:
+
+- Generate a TypeORM migration SQL/script to migrate existing metadata to the new `MetaOption` rows.
+- Add automated tests for the transactional meta replace.
+- Produce a compact API reference markdown for docs.
+
+Tell me which of these you'd like next.
+
