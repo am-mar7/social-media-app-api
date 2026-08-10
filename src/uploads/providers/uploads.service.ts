@@ -32,7 +32,7 @@ export class UploadsService {
   }
 
   public async uploadFile(file: Express.Multer.File) {
-    console.log('Uploaded file:', file);
+    this.logger.debug(`Uploaded file: ${file?.originalname ?? 'unknown'}`);
     if (!file) throw new BadRequestException('No file provided');
 
     if (

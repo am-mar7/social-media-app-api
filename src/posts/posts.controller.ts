@@ -25,7 +25,6 @@ export class PostsController {
   @Get()
   @Auth(AuthType.None)
   public getAllPosts(@Query() getPostsDto: GetPostsDto) {
-    console.log(getPostsDto);
     return this.postsService.getAllPosts(getPostsDto);
   }
 
@@ -41,9 +40,6 @@ export class PostsController {
     @Body() createPostDto: CreatePostDto,
     @ActiveUser() user: IActiveUser,
   ) {
-    console.log('POST DTO', createPostDto);
-    console.log('ACTIVE USER', user);
-
     return this.postsService.createPost(createPostDto, user);
   }
 
@@ -63,7 +59,6 @@ export class PostsController {
     @Body() patchPostDto: PatchPostDto,
     @ActiveUser() user: IActiveUser,
   ) {
-    console.log(patchPostDto);
     return this.postsService.updatePost(id, patchPostDto, user);
   }
 }

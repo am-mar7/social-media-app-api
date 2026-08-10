@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AccessTokenGuard } from '../access-token/access-token.guard';
@@ -11,6 +12,7 @@ import { AUTH_TYPE_KEY } from 'src/auth/constants/auth.constants';
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
+  private readonly logger = new Logger(AuthenticationGuard.name);
   private static readonly defaultAuthType = AuthType.Bearer;
 
   private readonly authGuardMap: Record<AuthType, CanActivate>;
@@ -31,7 +33,7 @@ export class AuthenticationGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     ) ?? [AuthenticationGuard.defaultAuthType];
 
-    console.log(authType);
+    this.logger.debug(`AuthType for handler: ${JSON.stringify(authType)}`);
 
     for (const type of authType) {
       const guard = this.authGuardMap[type];

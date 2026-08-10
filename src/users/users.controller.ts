@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Headers,
-  Ip,
   Param,
   Post,
   ParseIntPipe,
@@ -35,13 +34,8 @@ export class UsersController {
   @Post()
   public async createUser(
     @Body() createUserDto?: CreateUserDto,
-    @Headers() headers?: any,
-    @Ip() ip?: string,
   ): Promise<User | null> {
-    console.log('bodyyyyyyyyyyyyyyyyyyyyy', createUserDto);
-    console.log('headerrrrrrrrrrrrrrrrrr', headers);
-    console.log('ippppppppppppppppppp', ip);
-    console.log(createUserDto, createUserDto instanceof CreateUserDto);
+    // Request metadata available via headers/ip for auditing
     if (createUserDto) {
       return await this.usersService.createUser(createUserDto);
     }

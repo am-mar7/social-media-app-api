@@ -69,18 +69,16 @@ export class CommentsService {
     updateCommentDto: UpdateCommentDto,
     userId: number,
   ) {
-    console.log('Start of the service');
+    this.logger.debug(`updateComment called for id=${id} by user=${userId}`);
 
     const comment = await this.commentsRepository.findOne({
       where: { id },
       relations: { commenter: true },
     });
-    console.log('Fetched comment:', comment); // Debugging line
     if (!comment) {
       throw new NotFoundException(`Comment with ID ${id} not found`);
     }
-    console.log('Commenter ID:', comment.commenter.id); // Debugging line
-    console.log('User ID:', userId); // Debugging line
+    this.logger.debug(`commenterId=${comment.commenter.id}, userId=${userId}`);
     if (comment.commenter.id !== userId) {
       throw new ForbiddenException(
         'You are not authorized to update this comment',
@@ -88,7 +86,7 @@ export class CommentsService {
     }
 
     comment.content = updateCommentDto.content;
-    console.log('Updated comment content:', comment.content); // Debugging line
+    this.logger.debug(`comment ${id} content updated`);
     try {
       return await this.commentsRepository.save(comment);
     } catch (error) {

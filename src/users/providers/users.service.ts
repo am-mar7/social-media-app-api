@@ -36,7 +36,9 @@ export class UsersService {
 
   public async createUser(createUserDto: CreateUserDto) {
     let existingUser: User | null = null;
-    console.log(createUserDto);
+    this.logger.debug(
+      `createUserDto received for email=${createUserDto.email}`,
+    );
 
     try {
       existingUser = await this.userRepository.findOne({
