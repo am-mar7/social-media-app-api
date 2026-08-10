@@ -10,7 +10,7 @@ import { UploadsToImageKitProvider } from './upload-to-imagekit.povider';
 import ImageKit from 'imagekit';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
-import { UploadsEntity } from '../uploads.entity';
+import { Uploads } from '../uploads.entity';
 import { FileTypes } from '../enums/file-types';
 
 @Injectable()
@@ -20,8 +20,8 @@ export class UploadsService {
 
   constructor(
     private readonly configService: ConfigService,
-    @InjectRepository(UploadsEntity)
-    private readonly uploadsRepository: Repository<UploadsEntity>,
+    @InjectRepository(Uploads)
+    private readonly uploadsRepository: Repository<Uploads>,
     private readonly uploadToImageKitProvider: UploadsToImageKitProvider,
   ) {
     this.imageKit = new ImageKit({
