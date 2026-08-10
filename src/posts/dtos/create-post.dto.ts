@@ -68,4 +68,9 @@ export class CreatePostDto {
   @IsArray()
   @IsInt({ each: true })
   tags?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  uploadedFiles?: string[];
 }

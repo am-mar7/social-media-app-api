@@ -4,8 +4,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
 } from 'typeorm';
 import { FileTypes } from './enums/file-types';
+import { Post } from 'src/posts/post.entity';
 
 @Entity()
 export class Uploads {
@@ -51,4 +53,7 @@ export class Uploads {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToMany(() => Post, (post) => post.uploadedFiles)
+  posts: Post[];
 }

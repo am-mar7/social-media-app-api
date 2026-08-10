@@ -13,6 +13,7 @@ import { PostStatus, PostType } from './enums';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { Tag } from 'src/tags/tag.entity';
 import { User } from 'src/users/user.entity';
+import { Uploads } from 'src/uploads/uploads.entity';
 
 @Entity()
 export class Post {
@@ -90,4 +91,8 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments?: Comment[];
+
+  @ManyToMany(() => Uploads, (upload) => upload.posts)
+  @JoinTable()
+  uploadedFiles?: Uploads[];
 }
