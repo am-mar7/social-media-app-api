@@ -109,6 +109,28 @@ Prefer to run migration scripts in a staging environment before production.
 - `POST /comments` — create comment (auth required)
 - `POST /uploads` — upload file via configured provider
 
+### Comments with images
+
+- Authenticated users can create comments on posts via `POST /comments`.
+- Comments currently require `content` and may optionally include `uploadedFileUrl` — a URL previously returned by the `POST /uploads` endpoint. The service will resolve the URL to a persisted `Uploads` record and associate it with the comment (OneToOne, nullable).
+- To attach an image to a comment: first `POST /uploads` with a multipart file, take the returned `url` from the response, then include `uploadedFileUrl` in the `POST /comments` body.
+- Updating a comment accepts an `uploadedFileUrl` to change the attached image (or omit to leave unchanged).
+
+Create comment example (attach uploaded image):
+
+```http
+POST /comments
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+	"postId": 123,
+	"content": "Nice photo!",
+	"uploadedFileUrl": "https://ik.imagekit.io/your/path/image.jpg"
+}
+```
+
+
 Create post example (JSON body):
 
 ```http
