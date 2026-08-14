@@ -7,6 +7,6 @@ export default registerAs('database', () => ({
   password: process.env.DATABASE_PASSWORD,
   port: Number(process.env.DATABASE_PORT) || 5432,
   host: process.env.DATABASE_HOST || 'localhost',
-  autoLoadEntities: process.env.NODE_ENV === 'development' ? true : false,
+  autoLoadEntities: true,
   synchronize: process.env.NODE_ENV === 'development' ? true : false,
 }));
